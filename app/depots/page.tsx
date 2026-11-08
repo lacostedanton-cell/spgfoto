@@ -1,4 +1,5 @@
 'use client';
+import './depot-directory.css';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { supabase, adminEmail } from '@/lib/supabase';
