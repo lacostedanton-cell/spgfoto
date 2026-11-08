@@ -1,4 +1,5 @@
 'use client';
+import '../depot-directory.css';
 import { useEffect,useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -13,7 +14,7 @@ export default function DepotDetailPage(){
  const [depot,setDepot]=useState<Depot|null>(null);const [units,setUnits]=useState<Unit[]>([]);const [photos,setPhotos]=useState<Photo[]>([]);const [user,setUser]=useState<any>(null);const [filter,setFilter]=useState('Все');const [query,setQuery]=useState('');const [message,setMessage]=useState('');
  const [form,setForm]=useState({fleet_number:'',model:'',manufacturer:'',year_built:'',serial_number:'',category:'Трамвай',status:'Работает',notes:''});
  const isAdmin=!!user?.email&&user.email.toLowerCase()===adminEmail;
- async function load(){const [{data:d},{data:u},{data:p}]=await Promise.all([supabase.from('depots').select('id,name,city,country,transport_type').eq('id',id).maybeSingle(),supabase.from('vehicle_units').select('*').eq('depot_id',id).order('fleet_number'),supabase.from('photos').select('id,title,image_url,vehicle_id,vehicle_number,vehicle_model,shot_date').eq('status','approved').eq('depot_id',id).order('created_at',{ascending:false})]);setDepot(d as Depot|null);setUnits((u||[]) as Unit[]);setPhotos((p||[]) as Photo[]);}
+ async function load(){const {data:d}=await supabase.from('depots').select('id,name,city,country,transport_type').eq('id',id).maybeSingle();setDepot(d as Depot|null);const [{data:u},{data:p}]=await Promise.all([supabase.from('vehicle_units').select('*').eq('depot_id',id).order('fleet_number'),d?.name ? supabase.from('photos').select('id,title,image_url,vehicle_id,vehicle_number,vehicle_model,shot_date').eq('status','approved').eq('depot',d.name).order('created_at',{ascending:false}) : Promise.resolve({data:[]})]);setUnits((u||[]) as Unit[]);setPhotos((p||[]) as Photo[]);}
  useEffect(()=>{supabase.auth.getUser().then(({data})=>setUser(data.user));const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>setUser(s?.user??null));return ()=>subscription.unsubscribe();},[]);
  useEffect(()=>{if(id)load();},[id]);
  async function addUnit(e:React.FormEvent){e.preventDefault();const {error}=await supabase.from('vehicle_units').insert({depot_id:id,fleet_number:form.fleet_number.trim(),model:form.model.trim(),manufacturer:form.manufacturer.trim()||null,year_built:form.year_built?Number(form.year_built):null,serial_number:form.serial_number.trim()||null,category:form.category,status:form.status,notes:form.notes.trim()||null});setMessage(error?.message||'Транспортная единица добавлена');if(!error){setForm({fleet_number:'',model:'',manufacturer:'',year_built:'',serial_number:'',category:depot?.transport_type||'Трамвай',status:'Работает',notes:''});load();}}
