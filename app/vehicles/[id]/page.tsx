@@ -3,7 +3,7 @@ import '../vehicle.css';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {useParams} from 'next/navigation';
-import {supabase,adminEmail} from '@/lib/supabase';
+import {supabase} from '@/lib/supabase';
 type Vehicle={id:string;depot_id:string;fleet_number:string;model:string;manufacturer:string|null;year_built:number|null;serial_number:string|null;category:string;status:string;notes:string|null};
 type Depot={id:string;name:string;city:string|null;country:string|null};
 type History={id:string;event_date:string|null;event_type:string;title:string;description:string|null;old_value:string|null;new_value:string|null};
