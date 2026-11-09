@@ -120,6 +120,6 @@ export default function AdminUsersPage() {
 }
 
 const panel: CSSProperties = {background:'#fff',border:'1px solid #e5e8ed',borderRadius:16,padding:22,margin:'18px 0'};
-const muted: React.CSSProperties = {color:'#758094',fontSize:13,marginTop:6};
-const field: React.CSSProperties = {border:'1px solid #d9dee7',borderRadius:9,padding:'11px 12px',background:'#fff',color:'#18202b'};
-const linkButton: React.CSSProperties = {display:'inline-block',background:'#18202b',color:'#fff',padding:'11px 16px',borderRadius:9,textDecoration:'none'};
+const muted: CSSProperties = {color:'#758094',fontSize:13,marginTop:6};
+const field: CSSProperties = {border:'1px solid #d9dee7',borderRadius:9,padding:'11px 12px',background:'#fff',color:'#18202b'};
+const linkButton: CSSProperties = {display:'inline-block',background:'#18202b',color:'#fff',padding:'11px 16px',borderRadius:9,textDecoration:'none'};
