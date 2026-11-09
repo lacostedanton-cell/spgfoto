@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import { supabase, adminEmail } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 type Photo = { id:string; title:string; category:string; city:string|null; depot:string|null; vehicle_status:string|null; vehicle_purpose:string|null; vehicle_extra_status:string|null; vehicle_model:string|null; vehicle_number:string|null; shot_date:string|null; description:string|null; image_url:string; created_at:string; user_id:string };
 const categories = ['Все','Трамваи','Автобусы','Троллейбусы','Метро','Поезда','Электрички','Корабли','Самолёты','Другое'];
@@ -44,7 +44,7 @@ export default function Home() {
     });
     return () => { active = false; };
   },[user]);
-  useEffect(() => { load(); },[user]);
+  useEffect(() => { load(); },[user,isAdmin]);
   const cities = useMemo(() => Array.from(new Set(photos.map(p => p.city?.trim()).filter((city): city is string => !!city))).sort((a,b)=>a.localeCompare(b,'ru')),[photos]);
   const shown = useMemo(() => photos.filter(p => (active==='Все'||p.category===active) && (!cityFilter || p.city?.trim()===cityFilter) && [p.title,p.city,p.vehicle_model,p.vehicle_number,p.description].join(' ').toLowerCase().includes(query.toLowerCase())),[photos,active,cityFilter,query]);
   async function signIn(e:React.FormEvent) { e.preventDefault(); setMessage(''); const {error} = await supabase.auth.signInWithPassword({email,password}); setMessage(error?.message || 'Вход выполнен'); }
