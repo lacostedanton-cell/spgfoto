@@ -15,3 +15,47 @@
 @media(max-width:700px){.vehicleColumns>.vehiclePanel:first-child .vehicleState{width:100%;min-height:76px}}
 
 .vehicleColumns>.vehiclePanel:first-child select{display:block;width:min(100%,300px);min-height:92px;padding:14px;border:1px solid #ead58c;border-radius:10px;background:#fff0c2;color:#624b08;font:800 15px Manrope}
+
+
+/* Compact reference-style vehicle passport */
+.vehicleReferencePage{background:#ededed;color:#252525;font-family:Arial,sans-serif}
+.vehicleReferencePage header{min-height:48px;padding:8px max(calc((100% - 1180px)/2),18px);background:#fff;border-bottom:1px solid #d5d5d5}
+.vehicleReferencePage header>a:first-child{font-size:21px}
+.vehicleReferencePage .referenceWrap{width:min(1180px,calc(100% - 36px));margin:14px auto 34px}
+.referenceTitle{font:400 clamp(22px,3vw,32px)/1.2 Arial,sans-serif;margin:0 0 14px;color:#222}
+.referenceDepotTable{max-width:100%;overflow-x:auto;margin-bottom:16px}
+.referenceDepotTable table,.referencePassport table{width:100%;border-collapse:collapse;background:#fff;font:13px Arial,sans-serif}
+.referenceDepotTable th{background:#416b91;color:#fff;text-align:left;font-weight:400;padding:6px 9px;border:1px solid #b8c8d6;white-space:nowrap}
+.referenceDepotTable td{padding:6px 9px;border:1px solid #dedede;color:#555}
+.referenceDepotTable td:nth-child(3){font-weight:700;color:#222;text-align:center}
+.referencePassport{background:#fff;border:1px solid #ddd}
+.referencePassport table th,.referencePassport table td{padding:4px 8px;border-bottom:1px solid #e2e2e2;text-align:left;font-weight:400;vertical-align:top}
+.referencePassport table th{width:190px;white-space:nowrap}
+.referencePassport table td{color:#333}
+.referencePassport table td b{color:#315f88}
+.referenceStatus{display:inline-flex;align-items:center;gap:8px;font-weight:400}
+.referenceStatus i{display:inline-block;width:15px;height:15px;flex:0 0 15px}
+.referenceStatusSelect{margin-left:12px;padding:4px 7px;border:1px solid #bbb;background:#fff;font-size:12px}
+.referenceHistory{padding:8px 12px 14px}
+.referenceHistory h3{font-size:14px;margin:2px 0 10px}
+.referenceHistory ul{padding-left:22px;margin:0;font-size:13px;line-height:1.55}
+.referenceHistory li{margin:2px 0}
+.referenceHistory li b{font-weight:400}
+.referenceHistory button{margin-left:5px;padding:2px 6px;font-size:11px}
+.referenceVideos{width:min(1180px,calc(100% - 36px));margin:0 auto 22px}
+.referenceVideos h2{font-size:16px;margin:0 0 8px}
+.referenceEmpty{padding:10px 12px;background:#fff;border:1px solid #ddd;color:#71808b;font-size:13px}
+.referencePhotoTools{width:min(1180px,calc(100% - 36px));margin:0 auto 8px;display:flex;justify-content:space-between;gap:10px;color:#536779;font-size:12px}
+.referenceGallery{width:min(1180px,calc(100% - 36px));margin:0 auto 30px;background:#fff}
+.referencePhoto{display:grid;grid-template-columns:230px 1fr;gap:20px;padding:14px;border-bottom:1px solid #e2e2e2;min-height:150px}
+.referencePhoto:nth-child(even){background:#fafafa}
+.referencePhoto img{width:100%;height:130px;object-fit:cover;background:#eee}
+.referencePhoto>div{padding:5px 0;font-size:13px}
+.referencePhotoTitle{margin:0 0 12px;color:#315f88;font-weight:700}
+.referencePhoto>div b{display:block;margin:0 0 10px}
+.referencePhoto>div p:not(.referencePhotoTitle){margin:5px 0;color:#444}
+.referencePhoto small{color:#71808b}
+.referenceAdmin{width:min(1180px,calc(100% - 36px));margin:20px auto}
+.referenceAdmin .vehiclePanel{border-radius:0;box-shadow:none}
+.vehicleReferencePage footer{background:#e4e4e4;color:#64717b;padding:18px max(calc((100% - 1180px)/2),18px);border-top:1px solid #d3d3d3}
+@media(max-width:650px){.referencePhoto{grid-template-columns:1fr}.referencePhoto img{height:auto;max-height:220px}.referencePassport table th{width:130px}.referencePhotoTools{flex-direction:column}.referenceDepotTable table{min-width:650px}}
