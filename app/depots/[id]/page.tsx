@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 type Depot={id:string;name:string;city:string|null;country:string|null;transport_type:string|null};
 type Unit={id:string;depot_id:string;fleet_number:string;model:string;manufacturer:string|null;year_built:number|null;serial_number:string|null;category:string;status:string;notes:string|null};
 type Photo={id:string;title:string;image_url:string;vehicle_id:string|null;vehicle_number:string|null;vehicle_model:string|null;shot_date:string|null};
-const statuses=['Работает','Не работает','Выведен из эксплуатации','Памятник/тренажёр','Списан'];
+const statuses=['Работает','Не работает','Новый / не был в эксплуатации в этом городе','Выведен из эксплуатации','Памятник/тренажёр','Списан'];
 export default function DepotDetailPage(){
  const params=useParams(); const id=String(params.id);
  const [depot,setDepot]=useState<Depot|null>(null);const [units,setUnits]=useState<Unit[]>([]);const [photos,setPhotos]=useState<Photo[]>([]);const [user,setUser]=useState<any>(null);const [filter,setFilter]=useState('Все');const [query,setQuery]=useState('');const [message,setMessage]=useState('');
