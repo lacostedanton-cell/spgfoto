@@ -59,3 +59,55 @@
 .referenceAdmin .vehiclePanel{border-radius:0;box-shadow:none}
 .vehicleReferencePage footer{background:#e4e4e4;color:#64717b;padding:18px max(calc((100% - 1180px)/2),18px);border-top:1px solid #d3d3d3}
 @media(max-width:650px){.referencePhoto{grid-template-columns:1fr}.referencePhoto img{height:auto;max-height:220px}.referencePassport table th{width:130px}.referencePhotoTools{flex-direction:column}.referenceDepotTable table{min-width:650px}}
+
+/* Alignment and spacing refinement */
+.vehicleReferencePage{overflow-x:hidden}
+.vehicleReferencePage .referenceWrap,
+.vehicleReferencePage .referenceVideos,
+.vehicleReferencePage .referencePhotoTools,
+.vehicleReferencePage .referenceGallery,
+.vehicleReferencePage .referenceAdmin{width:min(1180px,calc(100% - 40px));margin-left:auto;margin-right:auto}
+.vehicleReferencePage .referenceWrap{margin-top:18px;margin-bottom:28px}
+.referenceTitle{margin:0 0 16px;line-height:1.25;overflow-wrap:anywhere}
+.referenceDepotTable{width:100%;margin:0 0 16px}
+.referenceDepotTable table{table-layout:fixed}
+.referenceDepotTable th,.referenceDepotTable td{padding:8px 10px;vertical-align:middle;line-height:1.35;overflow-wrap:anywhere}
+.referenceDepotTable th:nth-child(1){width:14%}
+.referenceDepotTable th:nth-child(2){width:20%}
+.referenceDepotTable th:nth-child(3){width:8%}
+.referenceDepotTable th:nth-child(4),.referenceDepotTable th:nth-child(5){width:9%}
+.referenceDepotTable th:nth-child(6){width:40%}
+.referencePassport{width:100%;margin:0}
+.referencePassport table{table-layout:fixed}
+.referencePassport table th{width:190px;padding:7px 12px;line-height:1.4}
+.referencePassport table td{padding:7px 12px;line-height:1.45;overflow-wrap:anywhere}
+.referenceHistory{padding:12px 14px 16px}
+.referenceHistory h3{margin:0 0 10px}
+.referenceHistory li{padding:3px 0;line-height:1.5;overflow-wrap:anywhere}
+.referenceVideos{margin-top:0;margin-bottom:20px}
+.referenceVideos h2{margin:0 0 9px;line-height:1.35}
+.referencePhotoTools{align-items:center;margin-bottom:9px;min-height:22px}
+.referenceGallery{display:grid;gap:0}
+.referencePhoto{grid-template-columns:minmax(180px,230px) minmax(0,1fr);align-items:start;gap:18px;padding:14px 16px;min-height:0}
+.referencePhoto img{display:block;width:100%;height:145px;object-fit:cover}
+.referencePhoto>div{min-width:0;padding:2px 0}
+.referencePhotoTitle{line-height:1.4;margin:0 0 9px}
+.referencePhoto>div b{margin:0 0 7px}
+.referencePhoto>div p:not(.referencePhotoTitle){line-height:1.45}
+.referenceAdmin{display:grid;gap:14px;padding:0}
+.referenceAdmin .vehiclePanel{width:100%;padding:20px}
+.referenceAdmin .historyForm{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.referenceAdmin .historyForm input,.referenceAdmin .historyForm select,.referenceAdmin .historyForm textarea{width:100%;min-width:0}
+.referenceAdmin .historyForm textarea,.referenceAdmin .historyForm button{grid-column:1/-1}
+.vehicleReferencePage footer{margin-top:28px;line-height:1.5}
+@media(max-width:700px){
+ .vehicleReferencePage .referenceWrap,.vehicleReferencePage .referenceVideos,.vehicleReferencePage .referencePhotoTools,.vehicleReferencePage .referenceGallery,.vehicleReferencePage .referenceAdmin{width:calc(100% - 28px)}
+ .referenceDepotTable table{min-width:680px;table-layout:auto}
+ .referencePassport table th{width:125px;white-space:normal}
+ .referencePassport table th,.referencePassport table td{padding:8px 9px}
+ .referencePhoto{grid-template-columns:1fr;gap:10px;padding:12px}
+ .referencePhoto img{height:auto;max-height:240px;aspect-ratio:16/9}
+ .referenceAdmin .historyForm{grid-template-columns:1fr}
+ .referenceAdmin .historyForm textarea,.referenceAdmin .historyForm button{grid-column:auto}
+ .referencePhotoTools{align-items:flex-start}
+}
