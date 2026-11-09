@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
-type Photo = { id:string; title:string; category:string; city:string|null; depot:string|null; vehicle_status:string|null; vehicle_purpose:string|null; vehicle_extra_status:string|null; vehicle_model:string|null; vehicle_number:string|null; shot_date:string|null; description:string|null; image_url:string; created_at:string; user_id:string };
+type Photo = { id:string; status:'pending'|'approved'|'rejected'; title:string; category:string; city:string|null; depot:string|null; vehicle_status:string|null; vehicle_purpose:string|null; vehicle_extra_status:string|null; vehicle_model:string|null; vehicle_number:string|null; shot_date:string|null; description:string|null; image_url:string; created_at:string; user_id:string };
 const categories = ['Все','Трамваи','Автобусы','Троллейбусы','Метро','Поезда','Электрички','Корабли','Самолёты','Другое'];
 export default function Home() {
   const [photos,setPhotos] = useState<Photo[]>([]);
