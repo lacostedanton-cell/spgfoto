@@ -2,7 +2,7 @@
 import './depot-directory.css';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { supabase, adminEmail } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 type Depot = { id:string; name:string; city:string|null; country:string|null; transport_type:string|null };
 type Unit = { id:string; depot_id:string; fleet_number:string; model:string; category:string; status:string };
@@ -14,7 +14,7 @@ export default function DepotsPage() {
   const [kind,setKind]=useState('Все типы');
   const [form,setForm]=useState({name:'',city:'',country:'',transport_type:'Трамвай'});
   const [message,setMessage]=useState('');
-  const isAdmin=!!user?.email && user.email.toLowerCase()===adminEmail;
+  const [isAdmin,setIsAdmin]=useState(false);
   async function load(){
     const [{data:d},{data:u}]=await Promise.all([
       supabase.from('depots').select('id,name,city,country,transport_type').order('country').order('city').order('name'),
@@ -23,6 +23,7 @@ export default function DepotsPage() {
     setDepots((d||[]) as Depot[]); setUnits((u||[]) as Unit[]);
   }
   useEffect(()=>{supabase.auth.getUser().then(({data})=>setUser(data.user)); const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>setUser(s?.user??null)); return ()=>subscription.unsubscribe();},[]);
+  useEffect(()=>{let active=true;if(!user){setIsAdmin(false);return;}supabase.rpc('current_app_role').then(({data,error})=>{if(active)setIsAdmin(!error&&(data==='owner'||data==='admin'));});return()=>{active=false;};},[user]);
   useEffect(()=>{load();},[]);
   const types=useMemo(()=>['Все типы',...Array.from(new Set(depots.map(d=>d.transport_type).filter((x):x is string=>!!x))).sort()],[depots]);
   const shown=useMemo(()=>depots.filter(d=>(kind==='Все типы'||d.transport_type===kind)&&[d.name,d.city,d.country,d.transport_type].join(' ').toLowerCase().includes(search.toLowerCase())),[depots,kind,search]);
