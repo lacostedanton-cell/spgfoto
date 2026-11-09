@@ -30,8 +30,9 @@ export default function Home() {
     const {data:depotData} = await supabase.from('depots').select('name,city,country,transport_type').order('name');
     setDepots((depotData || []) as {name:string;city:string|null;country:string|null;transport_type:string|null}[]);
     if (user) {
-      const {data:mine} = await supabase.from('photos').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
-      setMyPhotos((mine || []) as Photo[]);
+      const {data:mine,error:mineError} = await supabase.from('photos').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+      if (!mineError) setMyPhotos((mine || []) as Photo[]);
+      else console.error('Не удалось загрузить мои фотографии:', mineError.message);
     } else setMyPhotos([]);
     if (user && canModerate) {
       const {data:p} = await supabase.from('photos').select('*').eq('status','pending').order('created_at',{ascending:false});
@@ -67,18 +68,29 @@ export default function Home() {
     const {error:upErr} = await supabase.storage.from('photos').upload(path,file,{upsert:false});
     if(upErr) {setMessage(upErr.message);return;}
     const {data:publicData} = supabase.storage.from('photos').getPublicUrl(path);
-    const {error} = await supabase.from('photos').insert({
-      user_id:user.id, title:[String(form.get('model')||'').trim(), String(form.get('number')||'').trim() ? `№ ${String(form.get('number')).trim()}` : '', String(form.get('city')||'').trim()].filter(Boolean).join(' · ') || String(form.get('category')) + ' · ' + new Date().toLocaleDateString('ru-RU'), category:String(form.get('category')),
-      city:String(form.get('city')||''), depot:String(form.get('depot')||'')||null, vehicle_purpose:String(form.get('vehicle_purpose')||'Пассажирский'), vehicle_status:String(form.get('vehicle_status')||'Работает'), vehicle_extra_status:String(form.get('vehicle_extra_status')||'')||null, vehicle_model:String(form.get('model')||''),
-      vehicle_number:String(form.get('number')||''), photographer:String(form.get('photographer')||user.email?.split('@')[0]||'').trim(), shot_date:String(form.get('shot_date')||'')||null,
-      description:String(form.get('description')||''), image_url:publicData.publicUrl, storage_path:path, status:'pending'
-    });
+    const photoId = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+    const photoRecord = {
+      id:photoId, user_id:user.id,
+      title:[String(form.get('model')||'').trim(), String(form.get('number')||'').trim() ? `№ ${String(form.get('number')).trim()}` : '', String(form.get('city')||'').trim()].filter(Boolean).join(' · ') || String(form.get('category')) + ' · ' + new Date().toLocaleDateString('ru-RU'),
+      category:String(form.get('category')), city:String(form.get('city')||''), depot:String(form.get('depot')||'')||null,
+      vehicle_purpose:String(form.get('vehicle_purpose')||'Пассажирский'), vehicle_status:String(form.get('vehicle_status')||'Работает'),
+      vehicle_extra_status:String(form.get('vehicle_extra_status')||'')||null, vehicle_model:String(form.get('model')||''),
+      vehicle_number:String(form.get('number')||''), photographer:String(form.get('photographer')||user.email?.split('@')[0]||'').trim(),
+      shot_date:String(form.get('shot_date')||'')||null, description:String(form.get('description')||''),
+      image_url:publicData.publicUrl, storage_path:path, status:'pending' as const, created_at:createdAt
+    };
+    const {error} = await supabase.from('photos').insert(photoRecord);
     if (error) {
       await supabase.storage.from('photos').remove([path]);
       setMessage('Не удалось сохранить фото: ' + error.message);
       return;
     }
-    setMessage('Фото отправлено на модерацию. Оно появилось в разделе «Мои фотографии».');
+    // Сразу показываем отправленную фотографию автору и в очереди модерации,
+    // не дожидаясь повторного запроса к базе.
+    setMyPhotos(current => [photoRecord as Photo, ...current.filter(item => item.id !== photoId)]);
+    if (canModerate) setPending(current => [photoRecord as Photo, ...current.filter(item => item.id !== photoId)]);
+    setMessage('Фото отправлено на модерацию. Оно появилось в «Моих фотографиях» и очереди проверки.');
     setShowUpload(false);
     formElement.reset();
     await load();
