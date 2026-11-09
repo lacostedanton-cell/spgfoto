@@ -13,3 +13,5 @@
 .vehicleHero .vehicleNumber{margin-top:8px}
 .vehicleHero>p:not(.eyebrow){font-size:14px;margin-top:18px}
 @media(max-width:700px){.vehicleColumns>.vehiclePanel:first-child .vehicleState{width:100%;min-height:76px}}
+
+.vehicleColumns>.vehiclePanel:first-child select{display:block;width:min(100%,300px);min-height:92px;padding:14px;border:1px solid #ead58c;border-radius:10px;background:#fff0c2;color:#624b08;font:800 15px Manrope}
