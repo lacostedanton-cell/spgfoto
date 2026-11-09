@@ -8,7 +8,7 @@ type Vehicle={id:string;depot_id:string;fleet_number:string;model:string;manufac
 type Depot={id:string;name:string;city:string|null;country:string|null};
 type History={id:string;event_date:string|null;event_type:string;title:string;description:string|null;old_value:string|null;new_value:string|null};
 type Photo={id:string;title:string;image_url:string;shot_date:string|null;description:string|null};
-const statuses=['Работает','Не работает','Выведен из эксплуатации','Памятник/тренажёр','Списан'];
+const statuses=['Работает','Не работает','Новый / не был в эксплуатации в этом городе','Выведен из эксплуатации','Памятник/тренажёр','Списан'];
 export default function VehiclePage(){
  const params=useParams();const id=String(params.id);const [vehicle,setVehicle]=useState<Vehicle|null>(null);const [depot,setDepot]=useState<Depot|null>(null);const [history,setHistory]=useState<History[]>([]);const [photos,setPhotos]=useState<Photo[]>([]);const [depots,setDepots]=useState<Depot[]>([]);const [user,setUser]=useState<any>(null);const [message,setMessage]=useState('');const [transferDepot,setTransferDepot]=useState('');const [transferDate,setTransferDate]=useState(new Date().toISOString().slice(0,10));const [transferNote,setTransferNote]=useState('');const [editing,setEditing]=useState<History|null>(null);
  const [event,setEvent]=useState({event_date:new Date().toISOString().slice(0,10),event_type:'Изменение состояния',title:'',description:'',old_value:'',new_value:''});
