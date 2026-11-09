@@ -25,7 +25,7 @@ export default function VehiclePage(){
  async function deleteHistoryItem(item:History){if(!window.confirm('Удалить запись истории?'))return;const {error}=await supabase.from('vehicle_history').delete().eq('id',item.id);setMessage(error?.message||'Запись удалена');if(!error)load();}
  async function addEvent(e:React.FormEvent){e.preventDefault();const {error}=await supabase.from('vehicle_history').insert({vehicle_id:id,...event,created_by:user.id,event_date:event.event_date||null,description:event.description||null,old_value:event.old_value||null,new_value:event.new_value||null});setMessage(error?.message||'Запись истории добавлена');if(!error){setEvent({...event,title:'',description:'',old_value:'',new_value:''});load();}}
  const statusColors:Record<string,string>={'Работает':'#FFFFFF','Не работает':'#F5D547','Новый / не был в эксплуатации в этом городе':'#39B96B','Выведен из эксплуатации':'#A0A4AA','Памятник/тренажёр':'#F28C32','Списан':'#D94343'};
- const statusColor=statusColors[vehicle.status]||'#D9E0E7';
+ const statusColor=statusColors[vehicle?.status||'']||'#D9E0E7';
  const depotEvents=history.filter(h=>h.event_type==='Смена депо');
  const historyRows=[...depotEvents].reverse();
  if(!vehicle)return <main className="vehiclePage"><header><Link href="/">СПГ<span>foto</span></Link><Link href="/encyclopedia">← Энциклопедия</Link></header><div className="vehicleBody">{message||'Загружаем карточку транспортной единицы…'}</div></main>;
