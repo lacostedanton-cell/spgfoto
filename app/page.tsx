@@ -20,13 +20,14 @@ export default function Home() {
   const [depots,setDepots] = useState<{name:string;city:string|null;country:string|null;transport_type:string|null}[]>([]);
   const [newDepot,setNewDepot] = useState({name:'',city:'',country:'',transport_type:'Метро'});
   const [isAdmin,setIsAdmin] = useState(false);
+  const [canModerate,setCanModerate] = useState(false);
 
   async function load() {
     const {data} = await supabase.from('photos').select('*').eq('status','approved').order('created_at',{ascending:false});
     setPhotos((data || []) as Photo[]);
     const {data:depotData} = await supabase.from('depots').select('name,city,country,transport_type').order('name');
     setDepots((depotData || []) as {name:string;city:string|null;country:string|null;transport_type:string|null}[]);
-    if (user && isAdmin) {
+    if (user && canModerate) {
       const {data:p} = await supabase.from('photos').select('*').eq('status','pending').order('created_at',{ascending:false});
       setPending((p || []) as Photo[]);
     }
@@ -38,13 +39,13 @@ export default function Home() {
   },[]);
   useEffect(() => {
     let active = true;
-    if (!user) { setIsAdmin(false); return; }
+    if (!user) { setIsAdmin(false); setCanModerate(false); return; }
     supabase.rpc('current_app_role').then(({data,error}) => {
-      if (active) setIsAdmin(!error && (data === 'owner' || data === 'admin'));
+      if (active) { setIsAdmin(!error && (data === 'owner' || data === 'admin')); setCanModerate(!error && ['owner','admin','moderator'].includes(String(data))); }
     });
     return () => { active = false; };
   },[user]);
-  useEffect(() => { load(); },[user,isAdmin]);
+  useEffect(() => { load(); },[user,isAdmin,canModerate]);
   const cities = useMemo(() => Array.from(new Set(photos.map(p => p.city?.trim()).filter((city): city is string => !!city))).sort((a,b)=>a.localeCompare(b,'ru')),[photos]);
   const shown = useMemo(() => photos.filter(p => (active==='Все'||p.category===active) && (!cityFilter || p.city?.trim()===cityFilter) && [p.title,p.city,p.vehicle_model,p.vehicle_number,p.description].join(' ').toLowerCase().includes(query.toLowerCase())),[photos,active,cityFilter,query]);
   async function signIn(e:React.FormEvent) { e.preventDefault(); setMessage(''); const {error} = await supabase.auth.signInWithPassword({email,password}); setMessage(error?.message || 'Вход выполнен'); }
@@ -77,7 +78,7 @@ export default function Home() {
     <section id="geography" className="section"><div className="sectionHead"><div><p className="eyebrow">ГЕОГРАФИЯ ФОТОБАЗЫ</p><h2>Города и страны</h2></div><span className="muted">{cities.length} мест в каталоге</span></div><p className="muted" style={{marginBottom:18}}>География пополняется автоматически из мест съёмки опубликованных фотографий. Указывай город и страну при загрузке, например: «Берлин, Германия».</p><div className="chips"><button className={!cityFilter?"chip active":"chip"} onClick={()=>setCityFilter("")}>Все места</button>{cities.map(city=><button key={city} className={cityFilter===city?"chip active":"chip"} onClick={()=>{setCityFilter(city);document.getElementById("gallery")?.scrollIntoView({behavior:"smooth"});}}>{city}</button>)}</div></section>
     <section id="gallery" className="section gallerySection"><div className="sectionHead"><div><p className="eyebrow">СООБЩЕСТВО</p><h2>Фотогалерея</h2></div><span className="count">{shown.length} фото</span></div><div className="search"><span>⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по модели, номеру, городу..."/></div>{shown.length?<div className="grid">{shown.map(p=><article className="photo" key={p.id}><img src={p.image_url} alt={p.title}/><div className="photoInfo"><span className="tag">{p.category}</span><h3>{p.title}</h3><p>{[p.vehicle_model,p.vehicle_number,p.city,p.depot].filter(Boolean).join(' · ')}</p><small>Назначение: {p.vehicle_purpose || 'Не указано'}</small><small>Текущее состояние: {p.vehicle_status || 'Не указано'}{p.vehicle_extra_status ? ` · ${p.vehicle_extra_status}` : ''}</small><small>{p.shot_date || new Date(p.created_at).toLocaleDateString('ru-RU')}</small></div></article>)}</div>:<div className="empty"><b>Пока здесь тихо.</b><p>Добавь первую фотографию в эту фотобазу.</p><button onClick={()=>setShowUpload(true)}>Загрузить фотографию</button></div>}</section>
     <section id="depots" className="section"><div className="sectionHead"><div><p className="eyebrow">СПРАВОЧНИК</p><h2>Депо</h2></div><span className="muted">{depots.length} депо · <a href="/depots">Открыть полный справочник →</a></span></div>{depots.length?<div className="chips">{depots.map((d,i)=><span className="chip" key={`${d.name}-${i}`}>{d.name}{d.city?` · ${d.city}`:''}{d.country?`, ${d.country}`:''}{d.transport_type?` — ${d.transport_type}`:''}</span>)}</div>:<p className="muted">Депо пока не добавлены. Администратор может создать первое.</p>}</section>
-    {isAdmin&&<section className="section admin"><div className="sectionHead"><div><p className="eyebrow">УПРАВЛЕНИЕ</p><h2>Модерация</h2></div><span className="count">{pending.length} на проверке</span></div>{pending.length?pending.map(p=><div className="pending" key={p.id}><img src={p.image_url}/><div><b>{p.title}</b><p>{p.category} · {p.city} · {p.vehicle_model} · {p.depot} · {p.vehicle_status}</p></div><button onClick={()=>moderate(p.id,'approved')}>Одобрить</button><button className="danger" onClick={()=>moderate(p.id,'rejected')}>Отклонить</button></div>):<p className="muted">Новых фотографий на проверке нет.</p>}</section>}
+    {canModerate&&<section className="section admin"><div className="sectionHead"><div><p className="eyebrow">УПРАВЛЕНИЕ</p><h2>Модерация</h2></div><span className="count">{pending.length} на проверке</span></div>{pending.length?pending.map(p=><div className="pending" key={p.id}><img src={p.image_url}/><div><b>{p.title}</b><p>{p.category} · {p.city} · {p.vehicle_model} · {p.depot} · {p.vehicle_status}</p></div><button onClick={()=>moderate(p.id,'approved')}>Одобрить</button><button className="danger" onClick={()=>moderate(p.id,'rejected')}>Отклонить</button></div>):<p className="muted">Новых фотографий на проверке нет.</p>}</section>}
     {isAdmin&&<section className="section admin"><div className="sectionHead"><div><p className="eyebrow">СПРАВОЧНИКИ</p><h2>Добавить депо</h2></div></div><form className="depotForm" onSubmit={addDepot}><input placeholder="Название депо" value={newDepot.name} onChange={e=>setNewDepot({...newDepot,name:e.target.value})} required/><input placeholder="Город" value={newDepot.city} onChange={e=>setNewDepot({...newDepot,city:e.target.value})}/><input placeholder="Страна" value={newDepot.country} onChange={e=>setNewDepot({...newDepot,country:e.target.value})}/><select value={newDepot.transport_type} onChange={e=>setNewDepot({...newDepot,transport_type:e.target.value})}><option>Метро</option><option>Трамвай</option><option>Автобус</option><option>Троллейбус</option><option>Железная дорога</option><option>Другое</option></select><button>Добавить депо</button></form></section>}
     <footer id="about"><div className="brand">СПГ<span>foto</span></div><p>Фотобаза транспорта, созданная сообществом.</p><small>© 2026 СПГfoto · Полностью вымышленный фотопроект: все фотографии, транспортные средства, города, страны, депо, маршруты и сведения придуманы и не относятся к реальным объектам или событиям. Любые совпадения случайны.</small></footer>
     {message&&<div className="toast" onClick={()=>setMessage('')}>{message} ×</div>}
