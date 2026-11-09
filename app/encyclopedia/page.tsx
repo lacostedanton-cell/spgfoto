@@ -12,7 +12,7 @@ type Model={id:string;category:string;name:string;manufacturer:string|null;count
 type Stop={route_id:string;stop_name:string;position:number;direction:string|null};
 const tabs=['Подвижной состав','Составы','Маршруты','Модели'];
 export default function EncyclopediaPage(){
- const [tab,setTab]=useState(tabs[0]); const [query,setQuery]=useState('');
+ const [tab,setTab]=useState(tabs[0]); const [query,setQuery]=useState(''); const [statusFilter,setStatusFilter]=useState('Все состояния');
  const [vehicles,setVehicles]=useState<Vehicle[]>([]); const [depots,setDepots]=useState<Depot[]>([]);
  const [consists,setConsists]=useState<Consist[]>([]); const [routes,setRoutes]=useState<Route[]>([]);
  const [models,setModels]=useState<Model[]>([]); const [stops,setStops]=useState<Stop[]>([]);
@@ -33,7 +33,7 @@ export default function EncyclopediaPage(){
   setRoutes((r.data||[]) as Route[]);setModels((m.data||[]) as Model[]);setStops((s.data||[]) as Stop[]);
   setLoading(false);
  })()},[]);
- const filteredVehicles=useMemo(()=>vehicles.filter(x=>[x.fleet_number,x.model,x.manufacturer,x.category,x.status].join(' ').toLowerCase().includes(query.toLowerCase())),[vehicles,query]);
+ const filteredVehicles=useMemo(()=>vehicles.filter(x=>(statusFilter==='Все состояния'||x.status===statusFilter)&&[x.fleet_number,x.model,x.manufacturer,x.category,x.status].join(' ').toLowerCase().includes(query.toLowerCase())),[vehicles,query,statusFilter]);
  const filteredConsists=useMemo(()=>consists.filter(x=>[x.name,x.category,x.model,x.operator,x.home_depot].join(' ').toLowerCase().includes(query.toLowerCase())),[consists,query]);
  const filteredRoutes=useMemo(()=>routes.filter(x=>[x.city,x.country,x.route_number,x.category,x.name,x.operator].join(' ').toLowerCase().includes(query.toLowerCase())),[routes,query]);
  const filteredModels=useMemo(()=>models.filter(x=>[x.category,x.name,x.manufacturer,x.country].join(' ').toLowerCase().includes(query.toLowerCase())),[models,query]);
@@ -42,7 +42,7 @@ export default function EncyclopediaPage(){
   <section className="encyHero"><p className="eyebrow">ЕДИНЫЙ СПРАВОЧНИК</p><h1>Транспортная<br/><em>энциклопедия.</em></h1><p>Реестр каждой машины, история составов, маршруты и технические модели в одной базе.</p><div className="encyStats"><div><b>{vehicles.length}</b><span>машин</span></div><div><b>{consists.length}</b><span>составов</span></div><div><b>{routes.length}</b><span>маршрутов</span></div><div><b>{models.length}</b><span>моделей</span></div></div></section>
   <section className="encyContent"><div className="encyHeading"><div><p className="eyebrow">БАЗА ДАННЫХ</p><h2>Каталоги</h2></div><span>{loading?'Загрузка…':'Данные обновляются из реестра'}</span></div>
    <div className="encyTabs">{tabs.map(t=><button key={t} className={tab===t?'selected':''} onClick={()=>{setTab(t);setQuery('')}}>{t}</button>)}</div>
-   <input className="encySearch" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по номеру, модели, городу, маршруту…"/>
+   <div className="encyFilters"><input className="encySearch" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по номеру, модели, городу, маршруту…"/>{tab===tabs[0]&&<select className="encyStatusFilter" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option>Все состояния</option>{['Работает','Не работает','Новый / не был в эксплуатации в этом городе','Выведен из эксплуатации','Памятник/тренажёр','Списан'].map(x=><option key={x}>{x}</option>)}</select>}</div>
    {error&&<p className="encyError">Не удалось загрузить часть справочников: {error}. Проверь, что SQL-миграция энциклопедии выполнена.</p>}
    {loading?<p className="encyEmpty">Загружаем справочники…</p>:<>
     {tab===tabs[0]&&(filteredVehicles.length?<div className="encyGrid">{filteredVehicles.map(v=>{const d=depots.find(x=>x.id===v.depot_id);return <article className="encyCard" key={v.id}><div className="encyCardTop"><span>{v.category}</span><span>↗</span></div><h3>{v.model}</h3><a className="fleetNo" href={'/vehicles/'+encodeURIComponent(v.id)}>№ {v.fleet_number} · Открыть карточку</a><p>{[v.manufacturer,v.year_built].filter(Boolean).join(' · ')}</p><small>{d?.name||'Депо не указано'}{d?.city?' · '+d.city:''}</small><span className="encyStatus">{v.status}</span><Link href={'/vehicles/'+v.id}>Открыть карточку →</Link></article>})}</div>:<p className="encyEmpty">Машин пока нет. Добавь подвижной состав в карточке депо.</p>)}
