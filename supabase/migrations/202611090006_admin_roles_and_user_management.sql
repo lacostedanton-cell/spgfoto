@@ -105,6 +105,11 @@ begin
   end loop;
 end $$;
 
+-- Staff can see submissions waiting for review.
+drop policy if exists "Staff can view all photos" on public.photos;
+create policy "Staff can view all photos" on public.photos for select to authenticated
+  using (public.current_app_role() in ('owner','admin','moderator'));
+
 -- Moderators can review photo submissions; only owner/admin can manage reference data.
 drop policy if exists "Staff moderates photos" on public.photos;
 create policy "Staff moderates photos" on public.photos for update to authenticated
