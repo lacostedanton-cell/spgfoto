@@ -1,5 +1,5 @@
 'use client';
-import './directory-pages.css';
+import '../directory-pages.css';
 import SiteNav from '../components/SiteNav';
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
