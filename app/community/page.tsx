@@ -1,5 +1,5 @@
 'use client';
-import './directory-pages.css';
+import '../directory-pages.css';
 import SiteNav from '../components/SiteNav';
 import {useEffect,useState} from 'react';
 import {supabase} from '@/lib/supabase';
