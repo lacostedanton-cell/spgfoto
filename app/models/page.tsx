@@ -1,7 +1,6 @@
 'use client';
 import '../directory-pages.css';
 import {useEffect,useMemo,useState} from 'react';
-import SiteNav from '../components/SiteNav';
 import Link from 'next/link';
 import {supabase} from '@/lib/supabase';
 type Model={id:string;category:string;name:string;manufacturer:string|null;country:string|null;years_produced:string|null;description:string|null};
