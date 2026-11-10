@@ -11,6 +11,8 @@ export default function Home() {
   const [user,setUser] = useState<any>(null);
   const [email,setEmail] = useState('');
   const [password,setPassword] = useState('');
+  const [verificationCode,setVerificationCode] = useState('');
+  const [awaitingEmailCode,setAwaitingEmailCode] = useState(false);
   const [active,setActive] = useState('Все');
   const [uploadCategory,setUploadCategory] = useState('Трамваи');
   const [cityFilter,setCityFilter] = useState('');
@@ -55,8 +57,25 @@ export default function Home() {
   useEffect(() => { load(); },[user,isAdmin,canModerate]);
   const cities = useMemo(() => Array.from(new Set(photos.map(p => p.city?.trim()).filter((city): city is string => !!city))).sort((a,b)=>a.localeCompare(b,'ru')),[photos]);
   const shown = useMemo(() => photos.filter(p => (active==='Все'||p.category===active) && (!cityFilter || p.city?.trim()===cityFilter) && [p.city,p.vehicle_model,p.vehicle_number,p.description].join(' ').toLowerCase().includes(query.toLowerCase())),[photos,active,cityFilter,query]);
-  async function signIn(e:React.FormEvent) { e.preventDefault(); setMessage(''); const {error} = await supabase.auth.signInWithPassword({email,password}); setMessage(error?.message || 'Вход выполнен'); }
-  async function signUp() { setMessage(''); const {error} = await supabase.auth.signUp({email,password}); setMessage(error?.message || 'Проверь почту для подтверждения регистрации'); }
+  async function signIn(e:React.FormEvent) { e.preventDefault(); setMessage(''); const {error} = await supabase.auth.signInWithPassword({email:email.trim(),password}); setMessage(error?.message || 'Вход выполнен'); }
+  async function signUp() {
+    setMessage('');
+    if (!email.trim() || password.length < 6) { setMessage('Укажи почту и пароль не короче 6 символов'); return; }
+    const {data,error} = await supabase.auth.signUp({email:email.trim(),password});
+    if (error) { setMessage(error.message); return; }
+    if (data.session) { setMessage('Аккаунт создан, вход выполнен'); setAwaitingEmailCode(false); }
+    else { setAwaitingEmailCode(true); setMessage(`Отправили код подтверждения на ${email.trim()}. Введи его здесь.`); }
+  }
+  async function verifyEmailCode(e:React.FormEvent) {
+    e.preventDefault(); setMessage('Проверяем код…');
+    const {error} = await supabase.auth.verifyOtp({email:email.trim(),token:verificationCode.trim(),type:'signup'});
+    setMessage(error?.message || 'Почта подтверждена, аккаунт активирован.');
+    if (!error) { setAwaitingEmailCode(false); setVerificationCode(''); }
+  }
+  async function resendEmailCode() {
+    const {error} = await supabase.auth.resend({type:'signup',email:email.trim()});
+    setMessage(error?.message || 'Новый код отправлен на почту.');
+  }
   async function resetPassword() { if(!email){setMessage('Сначала введи адрес электронной почты');return;} const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin}); setMessage(error?.message || 'Ссылка для сброса пароля отправлена на почту'); }
   async function upload(e:React.FormEvent<HTMLFormElement>) {
     e.preventDefault(); if(!user) {setShowLogin(true); return;}
@@ -110,7 +129,7 @@ export default function Home() {
     {isAdmin&&<section className="section admin"><div className="sectionHead"><div><p className="eyebrow">СПРАВОЧНИКИ</p><h2>Добавить депо</h2></div></div><form className="depotForm" onSubmit={addDepot}><input placeholder="Название депо" value={newDepot.name} onChange={e=>setNewDepot({...newDepot,name:e.target.value})} required/><input placeholder="Город" value={newDepot.city} onChange={e=>setNewDepot({...newDepot,city:e.target.value})}/><input placeholder="Страна" value={newDepot.country} onChange={e=>setNewDepot({...newDepot,country:e.target.value})}/><select value={newDepot.transport_type} onChange={e=>setNewDepot({...newDepot,transport_type:e.target.value})}><option>Метро</option><option>Трамвай</option><option>Автобус</option><option>Троллейбус</option><option>Железная дорога</option><option>Другое</option></select><button>Добавить депо</button></form></section>}
     <footer id="about"><div className="brand">СПГ<span>foto</span></div><p>Фотобаза транспорта, созданная сообществом.</p><small>© 2026 СПГfoto · Полностью вымышленный фотопроект: все фотографии, транспортные средства, города, страны, депо, маршруты и сведения придуманы и не относятся к реальным объектам или событиям. Любые совпадения случайны.</small></footer>
     {message&&<div className="toast" onClick={()=>setMessage('')}>{message} ×</div>}
-    {showLogin&&<div className="overlay" onClick={()=>setShowLogin(false)}><div className="modal" onClick={e=>e.stopPropagation()}><button className="close" onClick={()=>setShowLogin(false)}>×</button><p className="eyebrow">АККАУНТ</p><h2>Войти или зарегистрироваться</h2><form onSubmit={signIn}><input type="email" placeholder="Электронная почта" value={email} onChange={e=>setEmail(e.target.value)} required/><input type="password" placeholder="Пароль (минимум 6 символов)" value={password} onChange={e=>setPassword(e.target.value)} required minLength={6}/><button className="wide">Войти</button></form><button className="linkBtn" onClick={signUp}>Создать аккаунт</button><button className="linkBtn" onClick={resetPassword}>Забыли пароль?</button><p className="muted">{message}</p></div></div>}
+    {showLogin&&<div className="overlay" onClick={()=>setShowLogin(false)}><div className="modal" onClick={e=>e.stopPropagation()}><button className="close" onClick={()=>setShowLogin(false)}>×</button><p className="eyebrow">АККАУНТ</p><h2>Войти или зарегистрироваться</h2>{awaitingEmailCode?<><p className="muted">Мы отправили письмо с кодом подтверждения. Не закрывай это окно.</p><form onSubmit={verifyEmailCode}><input inputMode="numeric" autoComplete="one-time-code" placeholder="Код из письма" value={verificationCode} onChange={e=>setVerificationCode(e.target.value)} required/><button className="wide">Подтвердить почту</button></form><button className="linkBtn" onClick={resendEmailCode}>Отправить код ещё раз</button></>:<><form onSubmit={signIn}><input type="email" placeholder="Электронная почта" value={email} onChange={e=>setEmail(e.target.value)} required/><input type="password" placeholder="Пароль (минимум 6 символов)" value={password} onChange={e=>setPassword(e.target.value)} required minLength={6}/><button className="wide">Войти</button></form><button className="linkBtn" onClick={signUp}>Создать аккаунт</button><button className="linkBtn" onClick={resetPassword}>Забыли пароль?</button></>}<p className="muted">{message}</p></div></div>}
     {showUpload&&<div className="overlay" onClick={()=>setShowUpload(false)}><div className="modal" onClick={e=>e.stopPropagation()}><button className="close" onClick={()=>setShowUpload(false)}>×</button><p className="eyebrow">В ФОТОБАЗУ</p><h2>Добавить фотографию</h2><form onSubmit={upload}><select name="category" value={uploadCategory} onChange={e=>setUploadCategory(e.target.value)}>{categories.slice(1).map(c=><option key={c}>{c}</option>)}</select><div className="two"><input name="model" placeholder="Модель транспорта"/><input name="number" placeholder="Бортовой / заводской №"/></div><input name="city" placeholder="Вымышленный город, страна"/><input name="photographer" placeholder="Автор снимка (фотограф)" defaultValue={user?.email?.split('@')[0] || ''}/><select name="depot"><option value="">Депо не указано</option>{depots.map((d,i)=><option key={`${d.name}-${i}`} value={d.name}>{d.name}{d.city?` · ${d.city}`:''}</option>)}</select><label className="fieldLabel">Назначение ТС<select name="vehicle_purpose" defaultValue="Пассажирский"><option>Пассажирский</option><option>Служебный</option></select></label>{uploadCategory==='Электрички'&&<label className="fieldLabel">Дополнительное состояние электрички<select name="vehicle_extra_status" defaultValue=""><option value="">Не указано</option><option>Расформирован</option></select></label>}<label className="fieldLabel">Текущее состояние ТС<select name="vehicle_status" defaultValue="Работает"><option>Работает</option><option>Не работает</option><option>Новый / не был в эксплуатации в этом городе</option><option>Выведен из эксплуатации</option><option>Памятник/тренажёр</option><option>Списан</option></select></label><input name="shot_date" type="date"/><textarea name="description" placeholder="Описание (необязательно)"/><input name="image" type="file" accept="image/*" required/><button className="wide">Отправить на модерацию</button></form><p className="muted">Фотографии публикуются после проверки модератором.</p></div></div>}
   </main>;
       }
